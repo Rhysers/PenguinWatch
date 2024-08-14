@@ -1,0 +1,111 @@
+#!/usr/bin/python3
+import sys
+import os
+import requests
+from PIL import Image, ImageFilter
+import json
+import base64
+
+def check_image_for_nudity(image_path, api_user, api_secret):
+    # Make API request
+    url = 'https://api.sightengine.com/1.0/check.json'
+    files = {'media': open(image_path, 'rb')}
+    data = {'models': 'nudity-2.1', 'api_user': api_user, 'api_secret': api_secret}
+    response = requests.post(url, files=files, data=data)
+    
+    # Parse response
+    if response.status_code == 200:
+        data = response.json()
+        return data
+    else:
+        print("Failed to check image")
+        return None
+
+def process_nudity_data(data):
+    if data['nudity']['none'] > 0.6:
+        print("Looking Good")
+        send_email = False
+        send_text = False
+    else:
+        send_email = True
+        if (data['nudity']['sexual_activity'] > 0.5 or 
+            data['nudity']['sexual_display'] > 0.5 or 
+            data['nudity']['erotica'] > 0.5):
+            print("Really Bad")
+            send_text = True
+        elif (data['nudity']['suggestive'] > 0.5 or 
+              data['nudity']['mildly_suggestive'] > 0.7 or 
+              data['nudity']['very_suggestive'] > 0.5):
+            print("Kinda Bad")
+            send_text = False
+    return send_email, send_text
+
+def blur_image(image_path):
+    img = Image.open(image_path)
+    blurred_img = img.filter(ImageFilter.GaussianBlur(20))  # Apply blur twice for a stronger effect
+    blurred_img.save('/tmp/Blurred.png')
+
+def upload_image(image_path, server_url, auth_key):
+    # URL of the webhook server
+    url = "http://penguinwatch.odinforce.net:9000/hooks/upload-data?token=PWatch"
+
+    # String data to send
+    text_data = "Hello, this is a test string."
+
+    # Read and encode the image as base64
+    with open("/tmp/Blurred.png", "rb") as image_file:
+        encoded_image = base64.b64encode(image_file.read()).decode('utf-8')
+
+    # Prepare the payload
+    payload = {
+        "text": text_data,
+        "image_data": encoded_image
+    }
+
+    # Send POST request
+    response = requests.post(url, json=payload)
+
+    # Print the response
+    print(response.text)
+
+def send_notifications(send_email, send_text):
+    if send_email:
+        # Send an email notification
+        server_url = 'http://penguinwatch.odinforce.net:9000/hooks/upload'  # Replace with your server URL
+        auth_key = 'EXAMPLE-1234-5678'  # Replace with your actual auth key
+        upload_image(image_path, server_url, auth_key)
+        print("Email sent with blurred image")
+        # Add code to send an email
+
+    if send_text:
+        # Send a text notification
+        print("Text sent about image")
+        # Add code to send a text message
+
+# Placeholder values
+image_path = '/tmp/screenshot.png'
+api_user = '1232345058'
+api_secret = 'BeRGUuvzkmQ7L4sHGjofjCabb96HSjNx'
+
+# Check if a file path is provided as a command-line argument
+if len(sys.argv) > 1:
+    file_path = sys.argv[1]
+else:
+    file_path = '/tmp/screenshot.png'
+
+if not os.path.exists(file_path):
+   print(f"Error: File does not exist: {file_path}")
+   sys.exit(1)
+
+# Check the image for nudity
+nudity_data = check_image_for_nudity(file_path, api_user, api_secret)
+if nudity_data:
+    # Process nudity data and decide actions
+    send_email, send_text = process_nudity_data(nudity_data)
+    
+    # If an email should be sent, blur the image
+    if send_email:
+        blur_image(image_path)
+    
+    # Send notifications
+    send_notifications(send_email, send_text)
