@@ -8,8 +8,8 @@ echo "Display is $Disp"
 # Infinite loop to repeatedly trigger the script
 while true; do
     # Generate a random number between 240 and 360
-#    INTERVAL=$((RANDOM % 121 + 240))
-    INTERVAL=20
+    INTERVAL=$((RANDOM % 121 + 240))
+    #INTERVAL=20
     # Log the interval (optional, useful for debugging)
     echo "Next execution in $INTERVAL seconds."
     

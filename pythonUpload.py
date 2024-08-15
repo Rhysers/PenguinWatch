@@ -2,7 +2,7 @@
 import sys
 import os
 import requests
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, PngImagePlugin
 import json
 import base64
 
@@ -84,8 +84,16 @@ def send_notifications(send_email, send_text):
 
 # Placeholder values
 image_path = '/tmp/screenshot.png'
-api_user = '1232345058'
-api_secret = 'BeRGUuvzkmQ7L4sHGjofjCabb96HSjNx'
+#Get API and User Info from File
+config = {}
+with open('/opt/PenguinWatch/config.txt') as file:
+    for line in file:
+        if line.strip() and not line.startswith("#"):
+    	    key, value = line.strip().split('=', 1)
+    	    config[key] = value
+api_user = config.get('SE_user')
+api_secret = config.get('SE_secret')
+UserName = config.get('PWUser')
 
 # Check if a file path is provided as a command-line argument
 if len(sys.argv) > 1:
@@ -100,6 +108,12 @@ if not os.path.exists(file_path):
 # Check the image for nudity
 nudity_data = check_image_for_nudity(file_path, api_user, api_secret)
 if nudity_data:
+    #Encode the data into the photo for troubleshooting
+    nudity_data_str = json.dumps(nudity_data)
+    img = Image.open("/tmp/screenshot.png")
+    metadata = PngImagePlugin.PngInfo()
+    metadata.add_text("Nudity_Info", nudity_data_str)
+    img.save("/tmp/screenshot.png", pnginfo=metadata)
     # Process nudity data and decide actions
     send_email, send_text = process_nudity_data(nudity_data)
     

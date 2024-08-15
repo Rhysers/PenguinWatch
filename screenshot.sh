@@ -14,7 +14,7 @@ RESPONSE=$(curl -s $URL)
 # Check if the response contains the expected string
 if [[ "$RESPONSE" == "webhook is running" ]]; then
   echo "Webhook is running."
-  ./pythonUpload.py
+  /opt/PenguinWatch/pythonUpload.py
 else
   echo "Webhook is not running."
   # Add actions to take if the response is not as expected

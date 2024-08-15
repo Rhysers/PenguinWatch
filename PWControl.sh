@@ -18,5 +18,5 @@ else
     export DISPLAY=$DISPLAY
     export XAUTHORITY=$XAUTHORITY
     # Optionally, start the script if it's not running
-    sudo -u rhys /opt/PenguinWatch/$SCRIPT_NAME "$DISPLAY" "$XAUTHORITY"  #&
+    sudo -u rhys /opt/PenguinWatch/$SCRIPT_NAME "$DISPLAY" "$XAUTHORITY" 
 fi
