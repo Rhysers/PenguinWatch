@@ -24,7 +24,7 @@ def check_image_for_nudity(image_path, api_user, api_secret):
 def process_nudity_data(data):
     if data['nudity']['none'] > 0.6:
         print("Looking Good")
-        send_email = False
+        send_email = True #TODO Change back to false
         send_text = False
     else:
         send_email = True
@@ -44,10 +44,16 @@ def blur_image(image_path):
     img = Image.open(image_path)
     blurred_img = img.filter(ImageFilter.GaussianBlur(20))  # Apply blur twice for a stronger effect
     blurred_img.save('/tmp/Blurred.png')
+    nudity_data_str = json.dumps(nudity_data)
+    img = Image.open("/tmp/Blurred.png")
+    metadata = PngImagePlugin.PngInfo()
+    metadata.add_text("Nudity_Info", nudity_data_str)
+    img.save("/tmp/Blurred.png", pnginfo=metadata)
 
 def upload_image(image_path, server_url, auth_key):
     # URL of the webhook server
-    url = "http://penguinwatch.odinforce.net:9000/hooks/upload-data?token=PWatch"
+    url = "https://odinforce.net/hooks/upload-data?token=PWatch"
+    #url = "http://penguinwatch.odinforce.net:9000/hooks/upload-data?token=PWatch"
 
     # String data to send
     text_data = "Hello, this is a test string."
@@ -61,6 +67,7 @@ def upload_image(image_path, server_url, auth_key):
         "text": text_data,
         "image_data": encoded_image
     }
+    #print(payload)
 
     # Send POST request
     response = requests.post(url, json=payload)
@@ -71,7 +78,8 @@ def upload_image(image_path, server_url, auth_key):
 def send_notifications(send_email, send_text):
     if send_email:
         # Send an email notification
-        server_url = 'http://penguinwatch.odinforce.net:9000/hooks/upload'  # Replace with your server URL
+        server_url = 'http://.odinforce.net/hooks/upload'  # Replace with your server URL
+        #server_url = 'http://penguinwatch.odinforce.net:9000/hooks/upload'
         auth_key = 'EXAMPLE-1234-5678'  # Replace with your actual auth key
         upload_image(image_path, server_url, auth_key)
         print("Email sent with blurred image")
@@ -109,11 +117,11 @@ if not os.path.exists(file_path):
 nudity_data = check_image_for_nudity(file_path, api_user, api_secret)
 if nudity_data:
     #Encode the data into the photo for troubleshooting
-    nudity_data_str = json.dumps(nudity_data)
-    img = Image.open("/tmp/screenshot.png")
-    metadata = PngImagePlugin.PngInfo()
-    metadata.add_text("Nudity_Info", nudity_data_str)
-    img.save("/tmp/screenshot.png", pnginfo=metadata)
+    #nudity_data_str = json.dumps(nudity_data)
+    #img = Image.open("/tmp/screenshot.png")
+    #metadata = PngImagePlugin.PngInfo()
+    #metadata.add_text("Nudity_Info", nudity_data_str)
+    #img.save("/tmp/screenshot.png", pnginfo=metadata)
     # Process nudity data and decide actions
     send_email, send_text = process_nudity_data(nudity_data)
     
