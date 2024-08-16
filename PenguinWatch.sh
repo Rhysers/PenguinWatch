@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Path to the script to be triggered
-SCRIPT_PATH="/opt/PenguinWatch/screenshot.sh"
+SCRIPT_PATH="/opt/PenguinWatch/screenshot.py"
 Disp=$1
 XAuth=$2
 echo "Display is $Disp"

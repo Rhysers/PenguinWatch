@@ -40,15 +40,36 @@ def process_nudity_data(data):
             send_text = False
     return send_email, send_text
 
-def blur_image(image_path):
+#def blur_image(image_path, nudity_data):
+#    img = Image.open(image_path)
+#    blurred_img = img.filter(ImageFilter.GaussianBlur(20))  # Apply blur twice for a stronger effect
+#    blurred_img.save('/tmp/Blurred.png')
+#    nudity_data_str = json.dumps(nudity_data)
+#    img = Image.open("/tmp/Blurred.png")
+#    metadata = PngImagePlugin.PngInfo()
+#    metadata.add_text("Nudity_Info", nudity_data_str)
+#    img = img.resize((img.width // 2, img.height //2))
+#    img.save("/tmp/Blurred.png", pnginfo=metadata)
+def blur_image(image_path, nudity_data):
+    # Open the image
     img = Image.open(image_path)
-    blurred_img = img.filter(ImageFilter.GaussianBlur(20))  # Apply blur twice for a stronger effect
-    blurred_img.save('/tmp/Blurred.png')
+    
+    # Apply a Gaussian blur to the image
+    blurred_img = img.filter(ImageFilter.GaussianBlur(20))
+    
+    # Resize the image to 50% of its original dimensions
+    blurred_img = blurred_img.resize((blurred_img.width // 2, blurred_img.height // 2))
+    
+    # Convert the nudity data to a JSON string
     nudity_data_str = json.dumps(nudity_data)
-    img = Image.open("/tmp/Blurred.png")
+    
+    # Create a PngInfo object to hold the metadata
     metadata = PngImagePlugin.PngInfo()
     metadata.add_text("Nudity_Info", nudity_data_str)
-    img.save("/tmp/Blurred.png", pnginfo=metadata)
+    
+    # Save the image with the added metadata
+    blurred_img.save("/tmp/Blurred.png", pnginfo=metadata)
+
 
 def upload_image(image_path, server_url, auth_key):
     # URL of the webhook server
@@ -127,7 +148,7 @@ if nudity_data:
     
     # If an email should be sent, blur the image
     if send_email:
-        blur_image(image_path)
+        blur_image(image_path, nudity_data)
     
     # Send notifications
     send_notifications(send_email, send_text)
