@@ -1,3 +1,6 @@
+# ARCHIVED
+Project worked with X11 only. I've since switched to Truple (https://truple.io) and recommend them if you're looking for software like this.
+
 # PenguinWatch
 Covenant Eyes like screen accountability for Linux
 
